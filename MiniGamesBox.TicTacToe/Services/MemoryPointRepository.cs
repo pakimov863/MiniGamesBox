@@ -1,4 +1,7 @@
-﻿namespace MiniGamesBox.TicTacToe.Services
+﻿using System;
+using System.Linq;
+
+namespace MiniGamesBox.TicTacToe.Services
 {
     using System.Collections.Generic;
     using Interfaces;
@@ -6,11 +9,20 @@
 
     public class MemoryPointRepository : IPointRepository
     {
+        private List<PointInfoModel> lst = new List<PointInfoModel>(); 
+
         public IEnumerable<PointInfoModel> GetAllPoints()
         {
-            yield return new PointInfoModel {X = 0, Y = 0, Type = PointType.Circle};
-            yield return new PointInfoModel { X = 10, Y = 2, Type = PointType.Cross };
-            yield return new PointInfoModel { X = 2, Y = 10, Type = PointType.Circle };
+            if (!lst.Any())
+            {
+                var random = new Random();
+                for (var i = 0; i < 1000; i++)
+                {
+                    lst.Add(new PointInfoModel {X = random.Next(-50, 50), Y = random.Next(-50, 50), Type = random.NextDouble() > 0.5 ? PointType.Circle : PointType.Cross});
+                }
+            }
+
+            return lst;
         }
 
         public void AddPoint(PointInfoModel point)
