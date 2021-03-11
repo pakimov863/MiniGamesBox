@@ -13,7 +13,9 @@
 
         private readonly Pen _gridPen;
 
-        private readonly Color _backgroundPen;
+        private readonly Color _backgroundColor;
+
+        private readonly IPointRepository _pointRepo;
         
         private Pen _crossPen;
 
@@ -27,13 +29,13 @@
 
         private long _currentY;
 
-        private IPointRepository _pointRepo;
+        private event EventHandler<FieldClickEventArgs> _fieldClicked;
 
         public GameField()
         {
             _gridStep = 30;
             _gridPen = new Pen(Color.LightGray, 1);
-            _backgroundPen = Color.White;
+            _backgroundColor = Color.White;
 
             InitializeComponent();
         }
@@ -42,6 +44,12 @@
             : this()
         {
             _pointRepo = pointRepo;
+        }
+
+        public event EventHandler<FieldClickEventArgs> FieldClicked
+        {
+            add => _fieldClicked += value;
+            remove => _fieldClicked -= value;
         }
 
         public void Initialize(Color crossColor, Color circleColor)
@@ -67,8 +75,25 @@
             _currentY += e.Y - _lastY;
             _lastX = e.X;
             _lastY = e.Y;
-            
+
             FieldDrawer.Invalidate();
+        }
+
+        private void FieldDrawerMouseClick(object sender, MouseEventArgs e)
+        {
+            if (_fieldClicked == null)
+            {
+                return;
+            }
+
+            var clickedX = e.X < 0 ? _currentX - e.X : e.X + _currentX;
+            var clickedY = e.Y > 0 ? _currentY - e.Y : e.Y + _currentY;
+
+            var pointX = Math.Floor(clickedX / (decimal)_gridStep);
+            var pointY = Math.Ceiling(clickedY / (decimal)_gridStep);
+
+            var args = new FieldClickEventArgs { ScreenX = e.X, ScreenY = e.Y, FieldX = (long)pointX, FieldY = (long)pointY };
+            _fieldClicked.Invoke(this, args);
         }
 
         private void FieldDrawerPaint(object sender, PaintEventArgs e)
@@ -78,12 +103,12 @@
             var height = pictureBox.Height;
             var graphics = e.Graphics;
 
-            graphics.Clear(_backgroundPen);
+            graphics.Clear(_backgroundColor);
             DrawScreenGrid(graphics, _currentX, _currentX + width, _currentY, _currentY - height);
-            DrawScreenAxis(graphics, _currentX, _currentX + width, _currentY, _currentY - height);
             DrawPoints(graphics, _currentX, _currentX + width, _currentY, _currentY - height);
 
             #if (DEBUG)
+            DrawScreenAxis(graphics, _currentX, _currentX + width, _currentY, _currentY - height);
             DrawDebugInfo(graphics, _currentX, _currentX + width, _currentY, _currentY - height);
             #endif
         }
@@ -92,7 +117,7 @@
         {
             var sb = new StringBuilder();
 
-            var pointX = Math.Ceiling(_currentX / (decimal)_gridStep);
+            var pointX = Math.Floor(_currentX / (decimal)_gridStep);
             var pointY = Math.Ceiling(_currentY / (decimal)_gridStep);
 
             sb.Append("Border: ").Append(minX).Append(",").Append(maxX).Append("; ").Append(minY).Append(",").Append(maxY).AppendLine();
@@ -140,10 +165,15 @@
 
         private void DrawPoints(Graphics graphics, long minX, long maxX, long minY, long maxY)
         {
+            if (_pointRepo == null)
+            {
+                return;
+            }
+
             var paddedMinX = minX - _gridStep * 2;
             var paddedMaxScreenX = maxX - minX;
-            var paddedMinY = minY + _gridStep;
-            var paddedMaxY = maxY;
+            var paddedMinScreenY = -_gridStep;
+            var paddedMaxScreenY = minY - maxY;
 
             foreach (var point in _pointRepo.GetAllPoints())
             {
@@ -157,10 +187,12 @@
                     continue;
                 }
 
-                if (minY < startScreenY || maxY < startScreenY)
+                if (paddedMinScreenY > startScreenY || paddedMaxScreenY < startScreenY)
                 {
-                    DrawSinglePoint(graphics, point, startScreenX, startScreenY, width, height);
+                    continue;
                 }
+
+                DrawSinglePoint(graphics, point, startScreenX, startScreenY, width, height);
             }
         }
 
@@ -179,11 +211,6 @@
             {
                 throw new Exception($"Некорректный тип точки для отображения ({point.Type})");
             }
-        }
-
-        private void FieldDrawerClick(object sender, EventArgs e)
-        {
-
         }
     }
 }

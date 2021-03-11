@@ -50,6 +50,7 @@
       <DependentUpon>GameField.cs</DependentUpon>
     </Compile>
     <Compile Include="Interfaces\IPointRepository.cs" />
+    <Compile Include="Model\FieldClickEventArgs.cs" />
     <Compile Include="Model\PointInfoModel.cs" />
     <Compile Include="Model\PointType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

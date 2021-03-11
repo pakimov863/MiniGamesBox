@@ -40,8 +40,8 @@
             this.FieldDrawer.Size = new System.Drawing.Size(150, 150);
             this.FieldDrawer.TabIndex = 0;
             this.FieldDrawer.TabStop = false;
-            this.FieldDrawer.Click += new System.EventHandler(this.FieldDrawerClick);
             this.FieldDrawer.Paint += new System.Windows.Forms.PaintEventHandler(this.FieldDrawerPaint);
+            this.FieldDrawer.MouseClick += new System.Windows.Forms.MouseEventHandler(this.FieldDrawerMouseClick);
             this.FieldDrawer.MouseDown += new System.Windows.Forms.MouseEventHandler(this.FieldDrawerMouseDown);
             this.FieldDrawer.MouseMove += new System.Windows.Forms.MouseEventHandler(this.FieldDrawerMouseMove);
             // 
