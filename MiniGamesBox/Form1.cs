@@ -12,7 +12,7 @@
         public Form1()
         {
             InitializeComponent();
-            InitializeField(new GameField(new MemoryPointRepository()));
+            InitializeField(new GameField());
         }
 
         private void InitializeField(GameField field)
@@ -25,7 +25,7 @@
             _gameField.Size = new Size(545, 383);
             _gameField.TabIndex = 0;
 
-            _gameField.Initialize(Color.Red, Color.Blue);
+            _gameField.Initialize(new MemoryPointRepository(), Color.Red, Color.Blue);
         }
     }
 }
