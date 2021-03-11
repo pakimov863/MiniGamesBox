@@ -5,11 +5,11 @@
     using TicTacToe.Controls;
     using TicTacToe.Services;
 
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
         private GameField _gameField;
 
-        public Form1()
+        public MainForm()
         {
             InitializeComponent();
             InitializeField(new GameField());
